@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Telegram Messages</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            flex-direction: column;
+        }
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            width: 100%;
+            max-width: 500px;
+            height: 400px;
+            overflow-y: auto;
+        }
+        .message {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+            text-align: left;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .message:hover {
+            background-color: #e0e0e0;
+        }
+        .full-message {
+            display: none;
+            font-weight: normal;
+            padding-top: 5px;
+            color: #333;
+        }
+        .delete-btn {
+            padding: 5px 10px;
+            background-color: red;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            display: none;
+        }
+        .delete-btn:hover {
+            background-color: darkred;
+        }
+        .refresh-btn {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #1877F2;
+            border: none;
+            color: white;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .refresh-btn:hover {
+            background-color: #0d65d9;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Received Telegram Messages</h2>
+        <button class="refresh-btn" onclick="fetchMessages()">Refresh Messages</button>
+        <div id="messages">
+            <p>Loading messages...</p>
+        </div>
+    </div>
+
+    <script>
+        const botToken = "7376868831:AAGD_Awg3e1soOOhS6aMX_lYY3_liWtjdKk";  // 🔴 Apna Telegram bot token yahan daalo
+        const url = `https://api.telegram.org/bot${botToken}/getUpdates`;
+
+        async function fetchMessages() {
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+
+                const messagesDiv = document.getElementById("messages");
+                messagesDiv.innerHTML = "";
+
+                if (!data.result || data.result.length === 0) {
+                    messagesDiv.innerHTML = "<p>No messages received.</p>";
+                    return;
+                }
+
+                data.result.forEach(update => {
+                    if (update.message && update.message.text) {
+                        const username = update.message.from.first_name || "Unknown User";
+                        const fullMsg = update.message.text;
+
+                        // ✅ Create Message Element (Only Username)
+                        const messageDiv = document.createElement("div");
+                        messageDiv.classList.add("message");
+                        messageDiv.textContent = `👤 ${username}`;
+
+                        // ✅ Create Full Message Section (Hidden)
+                        const fullMsgDiv = document.createElement("div");
+                        fullMsgDiv.classList.add("full-message");
+                        fullMsgDiv.innerHTML = `<p><strong>📩 Received Message:</strong> ${fullMsg}</p>`;
+
+                        // ✅ Create Delete Button (Hidden)
+                        const deleteBtn = document.createElement("button");
+                        deleteBtn.textContent = "Delete";
+                        deleteBtn.classList.add("delete-btn");
+                        deleteBtn.onclick = () => messageDiv.remove();
+
+                        messageDiv.appendChild(fullMsgDiv);
+                        messageDiv.appendChild(deleteBtn);
+                        messagesDiv.appendChild(messageDiv);
+
+                        // ✅ Toggle Full Message on Click
+                        messageDiv.onclick = () => {
+                            const isVisible = fullMsgDiv.style.display === "block";
+                            fullMsgDiv.style.display = isVisible ? "none" : "block";
+                            deleteBtn.style.display = isVisible ? "none" : "inline-block";
+                        };
+                    }
+                });
+            } catch (error) {
+                console.error("Error fetching messages:", error);
+                document.getElementById("messages").innerHTML = "<p>Error loading messages. Please try again.</p>";
+            }
+        }
+
+        fetchMessages(); // ✅ Page open hote hi messages load karega
+    </script>
+</body>
+</html>
